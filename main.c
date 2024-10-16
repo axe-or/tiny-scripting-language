@@ -1,5 +1,6 @@
 #include "prelude.h"
 #include "string.c"
+#include "assert.c"
 
 #include <stdio.h>
 
@@ -42,5 +43,6 @@ byte lex_peek(struct lexer* lex, i32 delta){
 }
 
 int main(){
+	assert(2 + 2 == 1);
 	return 0;
 }
