@@ -1,0 +1,40 @@
+// Comments
+// The language is garbage collected and dynamically typed
+
+// Declaration syntax
+// ID : Kind Value?
+
+pi : 3.141 // Compile time constant
+
+// Records allow to create structured types with default values
+Person : record {
+	name = "",
+	age = 0,
+}
+
+typeof(x) // Returns a `type` object (handle)
+// primitive types are:
+// int real bool
+// list dict
+
+// All functions are lambdas
+// Short form
+fun(x) -> x * 2
+// Long form
+fun(x) { return x * 2 }
+
+main : fun(){
+	// Var declarations can be shortened
+	x : var = 100
+	// Or...
+	x := 100
+
+	// Lists
+	names := ["bob", "alice"]
+	names = append(names, "carl")
+	len(names) // == 3
+	sub_list := names[1:]
+}
+
+
+

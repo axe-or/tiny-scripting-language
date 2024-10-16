@@ -25,7 +25,6 @@ struct utf8_iterator {
 	isize current;
 };
 
-
 #define SURROGATE1 ((i32)0xd800)
 #define SURROGATE2 ((i32)0xdfff)
 
@@ -169,19 +168,6 @@ bool utf8_iter_prev(struct utf8_iterator* iter, rune* r, i8* len){
 	return true;
 }
 
-#undef SURROGATE2
-#undef SURROGATE1
-#undef MASK2
-#undef MASK3
-#undef MASK4
-#undef MASKX
-#undef SIZE2
-#undef SIZE3
-#undef SIZE4
-#undef CONT
-#undef CONTINUATION1
-#undef CONTINUATION2
-
 struct string {
 	isize len;
 	byte const * data;
@@ -292,13 +278,8 @@ bool str_eq(string a, string b){
 
 #define MAX_CUTSET_LEN 64
 
-string str_trim(string s, string cutset){
-	string st = str_trim_leading(str_trim_trailing(s, cutset), cutset);
-	return st;
-}
-
 string str_trim_leading(string s, string cutset){
-	debug_assert(cutset.len <= MAX_CUTSET_LEN, "Cutset string exceeds MAX_CUTSET_LEN");
+	/* debug_assert(cutset.len <= MAX_CUTSET_LEN, "Cutset string exceeds MAX_CUTSET_LEN"); */
 
 	rune set[MAX_CUTSET_LEN] = {0};
 	isize set_len = 0;
@@ -343,7 +324,7 @@ string str_trim_leading(string s, string cutset){
 }
 
 string str_trim_trailing(string s, string cutset){
-	debug_assert(cutset.len <= MAX_CUTSET_LEN, "Cutset string exceeds MAX_CUTSET_LEN");
+	/* debug_assert(cutset.len <= MAX_CUTSET_LEN, "Cutset string exceeds MAX_CUTSET_LEN"); */
 
 	rune set[MAX_CUTSET_LEN] = {0};
 	isize set_len = 0;
@@ -386,3 +367,22 @@ string str_trim_trailing(string s, string cutset){
 
 	return str_sub(s, 0, cut_until);
 }
+
+string str_trim(string s, string cutset){
+	string st = str_trim_leading(str_trim_trailing(s, cutset), cutset);
+	return st;
+}
+
+#undef SURROGATE2
+#undef SURROGATE1
+#undef MASK2
+#undef MASK3
+#undef MASK4
+#undef MASKX
+#undef SIZE2
+#undef SIZE3
+#undef SIZE4
+#undef CONT
+#undef CONTINUATION1
+#undef CONTINUATION2
+

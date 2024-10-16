@@ -7,8 +7,7 @@ struct lexer {
 	i32 current;
 	i32 previous;
 
-	byte const* source;
-	i32 source_len;
+	string source;
 };
 
 enum token_type {
@@ -22,26 +21,25 @@ enum token_type {
 
 struct token {
 	enum token_type type;
-	byte const* lexeme;
+	string lexeme;
 };
 
 byte lex_advance(struct lexer* lex){
-	if(lex->current >= lex->source_len){
+	if(lex->current >= lex->source.len){
 		return 0;
 	}
 
 	lex->current += 1;
-	return lex->source[lex->current - 1];
+	return lex->source.data[lex->current - 1];
 }
 
 byte lex_peek(struct lexer* lex, i32 delta){
 	i32 pos = lex->current + delta;
-	if(pos < 0 || pos >= lex->source_len){
+	if(pos < 0 || pos >= lex->source.len){
 		return 0;
 	}
-	return lex->source[lex->current + delta];
+	return lex->source.data[lex->current + delta];
 }
-
 
 int main(){
 	return 0;
