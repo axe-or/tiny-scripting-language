@@ -7,17 +7,75 @@
 struct lexer {
 	i32 current;
 	i32 previous;
-
 	string source;
 };
 
+#define TOKENS \
+	X("<Unknown>", unknown) \
+	/* Delimiters */ \
+	X("(", paren_open) \
+	X(")", paren_close) \
+	X("[", square_open) \
+	X("]", square_close) \
+	X("{", curly_open) \
+	X("}", curly_close) \
+	/* Punctuation */ \
+	X(":", colon) \
+	X(",", comma) \
+	X(";", semicolon) \
+	X("->", arrow_right) \
+	/* Arithmetic & Bitwise */ \
+	X("+", plus) \
+	X("-", minus) \
+	X("*", star) \
+	X("/", slash) \
+	X("%", modulo) \
+	X("~", tilde) \
+	X("&", bit_and) \
+	X("|", bit_or) \
+	/* Logic & Comparison */ \
+	X("!", not) \
+	X("&&", and) \
+	X("||", or) \
+	X("==", eq) \
+	X("!=", neq) \
+	X(">", gt) \
+	X("<", lt) \
+	X(">=", gteq) \
+	X("<=", lteq) \
+	/* Other operators */ \
+	X(".", dot) \
+	X("=", assign) \
+	/* Special & Literals */ \
+	X("<identifier>", identifier) \
+	X("<string>", string) \
+	X("<integer>", integer) \
+	X("<real>", real) \
+	X("true", true) \
+	X("false", false) \
+	X("nil", nil) \
+	/* Keywords */ \
+	X("var", var) \
+	X("record", record) \
+	X("fun", fun) \
+	X("return", return) \
+	X("if", if) \
+	X("else", else) \
+	X("for", for) \
+	X("continue", continue) \
+	X("break", break)
+
 enum token_type {
-	tk_paren_open,
-	tk_paren_close,
-	tk_square_open,
-	tk_square_close,
-	tk_curly_open,
-	tk_curly_close,
+#define X(_, name) tk_##name,
+	TOKENS
+#undef X
+	tk__count,
+};
+
+static const struct { cstring key; i32 val; } token_str_map[] = {
+#define X(str, name) {.key = str, .val = tk_##name },
+	TOKENS
+#undef X
 };
 
 struct token {
@@ -43,6 +101,9 @@ byte lex_peek(struct lexer* lex, i32 delta){
 }
 
 int main(){
-	assert(2 + 2 == 1);
+	for(int i = 0; i < tk__count; i ++){
+		printf("%s :: %d\n", token_str_map[i].key, token_str_map[i].val);
+	}
+
 	return 0;
 }
