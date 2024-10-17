@@ -25,7 +25,7 @@ struct utf8_iterator {
 	isize current;
 };
 
-#define str_lit(cstr_lit) ((string){.data = cstr_lit, .len = sizeof(cstr_lit)})
+#define str_lit(cstr_lit) ((string){.data = (byte const*)(cstr_lit), .len = sizeof(cstr_lit)})
 
 // Meant to be used with `%.*s`
 #define str_fmt(str) str.data, str.len
@@ -57,8 +57,8 @@ struct utf8_encode_result utf8_encode(rune c){
 	struct utf8_encode_result res = {0};
 
 	if((c >= CONTINUATION1 && c <= CONTINUATION2) ||
-	   (c >= SURROGATE1 && c <= SURROGATE2) ||
-	   (c > UTF8_RANGE4))
+		(c >= SURROGATE1 && c <= SURROGATE2) ||
+		(c > UTF8_RANGE4))
 	{
 		return UTF8_ERROR_ENCODED;
 	}
@@ -247,7 +247,7 @@ isize str_codepoint_count(string s){
 
 isize str_codepoint_offset(string s, isize n){
 	struct utf8_iterator it = str_iterator(s);
-	
+
 	isize acc = 0;
 
 	rune c; i8 len;
@@ -290,7 +290,7 @@ string str_trim_leading(string s, string cutset){
 	isize set_len = 0;
 	isize cut_after = 0;
 
-	decode_cutset: {
+decode_cutset: {
 		rune c; i8 n;
 		struct utf8_iterator iter = str_iterator(cutset);
 
@@ -302,7 +302,7 @@ string str_trim_leading(string s, string cutset){
 		set_len = i;
 	}
 
-	strip_cutset: {
+strip_cutset: {
 		rune c; i8 n;
 		struct utf8_iterator iter = str_iterator(s);
 
@@ -335,7 +335,7 @@ string str_trim_trailing(string s, string cutset){
 	isize set_len = 0;
 	isize cut_until = s.len;
 
-	decode_cutset: {
+decode_cutset: {
 		rune c; i8 n;
 		struct utf8_iterator iter = str_iterator(cutset);
 
@@ -347,7 +347,7 @@ string str_trim_trailing(string s, string cutset){
 		set_len = i;
 	}
 
-	strip_cutset: {
+strip_cutset: {
 		rune c; i8 n;
 		struct utf8_iterator iter = str_iterator_reversed(s);
 

@@ -3,17 +3,17 @@
 #include "assert.c"
 
 #if defined(__clang__) || defined(__GNUC__)
-#define _memset_impl(ptr, v, n) __builtin_memset(ptr, v, n)
-#define _memcpy_impl(dst, src, n) __builtin_memcpy(ptr, v n)
-#define _memmove_impl(dst, src, n) __builtin_memmove(ptr, v, n)
+#define _memset_impl __builtin_memset
+#define _memcpy_impl __builtin_memcpy
+#define _memmove_impl __builtin_memmove
 #else
 extern void* memset(void *dst, int c, size_t n);
 extern void* memmove(void *dst, void const * src, size_t n);
 extern void* memcpy(void *dst, void const * src, size_t n);
 
-#define _memset_impl(ptr, v, n) memset(ptr, v, n)
-#define _memcpy_impl(dst, src, n) memcpy(dst, src, n)
-#define _memmove_impl(dst, src, n) memmove(dst, src, n)
+#define _memset_impl memset
+#define _memcpy_impl memcpy
+#define _memmove_impl memmove
 #endif
 
 void mem_copy(void* dest, void* source, isize nbytes){

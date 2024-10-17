@@ -59,7 +59,7 @@ static_assert(CHAR_BIT == 8, "Invalid char size");
 #define clamp(Lo, X, Hi) min(max(Lo, X), Hi)
 
 #define container_of(Ptr, Type, Member) \
-	((Type *)(((void *)(Ptr)) - offsetof(Type, Member)))
+((Type *)(((void *)(Ptr)) - offsetof(Type, Member)))
 
 #ifndef __cplusplus
 #undef bool
