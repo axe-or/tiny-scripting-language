@@ -1,8 +1,10 @@
 #include "prelude.h"
+#include "memory.c"
 #include "string.c"
 #include "assert.c"
 
 #include <stdio.h>
+
 
 struct lexer {
 	i32 current;
@@ -72,8 +74,8 @@ enum token_type {
 	tk__count,
 };
 
-static const struct { cstring key; i32 val; } token_str_map[] = {
-#define X(str, name) {.key = str, .val = tk_##name },
+static const struct { string key; i32 val; } token_str_map[] = {
+#define X(str, name) {.key = str_lit(str), .val = tk_##name },
 	TOKENS
 #undef X
 };
@@ -81,6 +83,11 @@ static const struct { cstring key; i32 val; } token_str_map[] = {
 struct token {
 	enum token_type type;
 	string lexeme;
+	union {
+		i64 integer;
+		f64 real;
+		string str;
+	} payload;
 };
 
 byte lex_advance(struct lexer* lex){
@@ -100,10 +107,23 @@ byte lex_peek(struct lexer* lex, i32 delta){
 	return lex->source.data[lex->current + delta];
 }
 
-int main(){
-	for(int i = 0; i < tk__count; i ++){
-		printf("%s :: %d\n", token_str_map[i].key, token_str_map[i].val);
+bool lex_advance_matching(struct lexer* lex, byte match){
+	if(lex->current >= lex->source.len){
+		return false;
 	}
+	if(lex->source.data[lex->current] == match){
+		lex->current += 1;
+		return true;
+	}
+	return false;
+}
 
+struct token_array {
+	struct token* data;
+	isize len;
+	isize cap;
+};
+
+int main(){
 	return 0;
 }
