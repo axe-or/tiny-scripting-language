@@ -5,7 +5,6 @@
 
 #include <stdio.h>
 
-
 struct lexer {
 	i32 current;
 	i32 previous;
@@ -13,59 +12,59 @@ struct lexer {
 };
 
 #define TOKENS \
-X("<Unknown>", unknown) \
-/* Delimiters */ \
-X("(", paren_open) \
-X(")", paren_close) \
-X("[", square_open) \
-X("]", square_close) \
-X("{", curly_open) \
-X("}", curly_close) \
-/* Punctuation */ \
-X(":", colon) \
-X(",", comma) \
-X(";", semicolon) \
-X("->", arrow_right) \
-/* Arithmetic & Bitwise */ \
-X("+", plus) \
-X("-", minus) \
-X("*", star) \
-X("/", slash) \
-X("%", modulo) \
-X("~", tilde) \
-X("&", bit_and) \
-X("|", bit_or) \
-/* Logic & Comparison */ \
-X("!", not) \
-X("&&", and) \
-X("||", or) \
-X("==", eq) \
-X("!=", neq) \
-X(">", gt) \
-X("<", lt) \
-X(">=", gteq) \
-X("<=", lteq) \
-/* Other operators */ \
-X(".", dot) \
-X("=", assign) \
-/* Special & Literals */ \
-X("<identifier>", identifier) \
-X("<string>", string) \
-X("<integer>", integer) \
-X("<real>", real) \
-X("true", true) \
-X("false", false) \
-X("nil", nil) \
-/* Keywords */ \
-X("var", var) \
-X("record", record) \
-X("fun", fun) \
-X("return", return) \
-X("if", if) \
-X("else", else) \
-X("for", for) \
-X("continue", continue) \
-X("break", break)
+	X("<Unknown>", unknown) \
+	/* Delimiters */ \
+	X("(", paren_open) \
+	X(")", paren_close) \
+	X("[", square_open) \
+	X("]", square_close) \
+	X("{", curly_open) \
+	X("}", curly_close) \
+	/* Punctuation */ \
+	X(":", colon) \
+	X(",", comma) \
+	X(";", semicolon) \
+	X("->", arrow_right) \
+	/* Arithmetic & Bitwise */ \
+	X("+", plus) \
+	X("-", minus) \
+	X("*", star) \
+	X("/", slash) \
+	X("%", modulo) \
+	X("~", tilde) \
+	X("&", bit_and) \
+	X("|", bit_or) \
+	/* Logic & Comparison */ \
+	X("!", not) \
+	X("&&", and) \
+	X("||", or) \
+	X("==", eq) \
+	X("!=", neq) \
+	X(">", gt) \
+	X("<", lt) \
+	X(">=", gteq) \
+	X("<=", lteq) \
+	/* Other operators */ \
+	X(".", dot) \
+	X("=", assign) \
+	/* Special & Literals */ \
+	X("<identifier>", identifier) \
+	X("<string>", string) \
+	X("<integer>", integer) \
+	X("<real>", real) \
+	X("true", true) \
+	X("false", false) \
+	X("nil", nil) \
+	/* Keywords */ \
+	X("var", var) \
+	X("record", record) \
+	X("fun", fun) \
+	X("return", return) \
+	X("if", if) \
+	X("else", else) \
+	X("for", for) \
+	X("continue", continue) \
+	X("break", break)
 
 enum token_type {
 	#define X(_, name) tk_##name,
