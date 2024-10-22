@@ -17,17 +17,17 @@ extern void* memcpy(void *dst, void const * src, size_t n);
 #endif
 
 void mem_copy(void* dest, void* source, isize nbytes){
-	assert(nbytes >= 0);
+	assert(nbytes >= 0, "Cannot copy < 0 bytes");
 	_memmove_impl(dest, source, nbytes);
 }
 
 void mem_copy_no_overlap(void* dest, void* source, isize nbytes){
-	assert(nbytes >= 0);
+	assert(nbytes >= 0, "Cannot copy < 0 bytes");
 	_memcpy_impl(dest, source, nbytes);
 }
 
 void mem_set(void* dest, byte val, isize nbytes){
-	assert(nbytes >= 0);
+	assert(nbytes >= 0, "Cannot copy < 0 bytes");
 	_memset_impl(dest, val, nbytes);
 }
 
@@ -40,7 +40,7 @@ bool mem_valid_alignment(isize align){
 }
 
 uintptr mem_align_forward(uintptr p, uintptr a){
-	assert(mem_valid_alignment(a));
+	assert(mem_valid_alignment(a), "Invalid memory alignment");
 	uintptr mod = p & (a - 1);
 	if(mod > 0){
 		p += (a - mod);
@@ -52,10 +52,23 @@ struct arena {
 	byte* data;
 	isize offset;
 	isize cap;
+
+	void* last_allocation;
 };
 
+struct arena arena_make(byte* data, isize data_len){
+	assert(data_len > 0, "Data length cannot be <= 0");
+	struct arena a = {
+		.data = data,
+		.offset = 0,
+		.cap = data_len,
+		.last_allocation = NULL,
+	};
+	return a;
+}
+
 uintptr arena_required_mem(uintptr cur, isize nbytes, isize align){
-	assert(mem_valid_alignment(align));
+	assert(mem_valid_alignment(align), "Invalid memory alignment");
 	uintptr aligned  = mem_align_forward(cur, align);
 	uintptr padding  = (uintptr)(aligned - cur);
 	uintptr required = padding + nbytes;
@@ -75,6 +88,7 @@ void* arena_alloc_non_zero(struct arena* a, isize size, isize align){
 
 	a->offset += required;
 	void* allocation = &a->data[a->offset - size];
+	a->last_allocation = allocation;
 	return allocation;
 }
 
@@ -88,6 +102,31 @@ void* arena_alloc(struct arena* a, isize size, isize align){
 
 void arena_free(struct arena* a){
 	a->offset = 0;
+	a->last_allocation = NULL;
 }
 
+// Resize allocation in-place
+void* arena_resize(struct arena* a, void* p, isize size){
+	if(p != a->last_allocation || size < 0 || p == NULL){
+		return NULL;
+	}
+
+	uintptr base = (uintptr)a->data;
+	uintptr last_offset = (uintptr)p - base;
+
+	isize old_size = a->offset - last_offset;
+	isize delta = size - old_size;
+
+	if((a->offset + delta) < a->cap){
+		a->offset += delta;
+		// printf("OFFSET: %ld\n", a->offset);
+		// printf("LAST_OFFSET: %ld\n", last_offset);
+		// printf("DELTA: %ld\n", delta);
+	}
+	else {
+		return NULL;
+	}
+
+	return p;
+}
 

@@ -19,7 +19,7 @@ void debug_assert_ex(bool predicate, cstring msg, cstring file, i32 line){
 }
 
 #ifndef DISABLE_ASSERT
-#define assert(Expr) debug_assert_ex((Expr), #Expr, __FILE__, __LINE__)
+#define assert(expr, msg) debug_assert_ex((expr), msg, __FILE__, __LINE__)
 #else
 #define assert(Expr) ((void)(Expr))
 #endif

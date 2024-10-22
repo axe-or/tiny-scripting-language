@@ -1,14 +1,12 @@
 /* Essential definitions. */
 #pragma once
 
-#define BASE_C_VERSION "{{BaseCVersion}}"
-
 #include <stddef.h>
 #include <stdint.h>
 #include <stdalign.h>
+#include <stdatomic.h>
 #include <stdnoreturn.h>
 #include <stdbool.h>
-
 #include <limits.h>
 
 typedef int8_t  i8;
