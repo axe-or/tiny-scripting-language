@@ -1,0 +1,91 @@
+#pragma once
+
+#include "prelude.h"
+#include "string.c"
+#include "memory.c"
+
+struct source_location {
+	string file;
+	i32 offset;
+};
+
+struct source_location src_loc(string file, i32 offset){
+	struct source_location loc;
+	loc.file = file;
+	loc.offset = offset;
+	return loc;
+}
+
+enum compiler_error {
+	comp_err_none = 0,
+
+	lexer_err_unexpected_char,
+	lexer_err_unclosed_string,
+	lexer_err_invalid_escape_sequence,
+
+	parser_err_unexpected_token,
+	parser_err_prohibited_statement,
+
+	checker_err_incompatible_types,
+};
+
+struct error_list_entry {
+	string message;
+	struct source_location location;
+	i32 error_kind;
+	struct error_list_entry* next;
+};
+
+struct error_list {
+	struct error_list_entry* head;
+	struct arena arena;
+};
+
+#define MAX_ERROR_MSG_LEN KiB(8)
+
+i32 error_emit(struct error_list* list, struct source_location location, i32 kind, cstring fmt, ...){
+	static byte buf[MAX_ERROR_MSG_LEN];
+	i32 n = 0;
+	/* Format message */ {
+		va_list args;
+		va_start(args, fmt);
+		n = vsnprintf(buf, MAX_ERROR_MSG_LEN - 1, fmt, args);
+		va_end(args);
+	}
+
+	byte* msg = arena_alloc(&list->arena, n, alignof(byte));
+	struct error_list_entry* err = arena_push(&list->arena, struct error_list_entry);
+
+	if(msg != NULL && err != NULL){
+		mem_copy_no_overlap(msg, buf, n);
+		struct error_list_entry* old = list->head;
+		list->head = err;
+
+		err->next = old;
+		err->message = str_from(msg);
+		err->error_kind = kind;
+		err->location = location;
+	}
+
+	return kind;
+}
+
+#define TERM_RED "\e[0;31m"
+#define TERM_RESET "\e[0m"
+
+#define ERR_HEADER TERM_RED "Error" TERM_RESET
+
+void error_print_list(struct error_list list){
+	for(struct error_list_entry* cur = list.head;
+		cur != NULL;
+		cur = cur->next)
+	{
+		printf("["ERR_HEADER" %s:%d] %s\n",
+				cur->location.file,
+				cur->location.offset,
+				cur->message);
+	}
+}
+
+#undef ERR_HEADER
+

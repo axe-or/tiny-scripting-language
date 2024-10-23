@@ -8,7 +8,12 @@ struct lexer {
 	i32 current;
 	i32 previous;
 	string source;
+	string file;
 };
+
+struct source_location lex_current_loc(struct lexer* lex){
+	return src_loc(lex->file, lex->current);
+}
 
 byte lex_advance(struct lexer* lex){
 	if(lex->current >= lex->source.len){

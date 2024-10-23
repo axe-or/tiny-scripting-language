@@ -7,6 +7,7 @@
 #include <stdatomic.h>
 #include <stdnoreturn.h>
 #include <stdbool.h>
+#include <stdarg.h>
 #include <limits.h>
 
 typedef int8_t  i8;

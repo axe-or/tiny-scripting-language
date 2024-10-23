@@ -1,5 +1,6 @@
 #pragma once
 #include "prelude.h"
+#include "error.c"
 #include "string.c"
 #include "memory.c"
 
@@ -73,7 +74,7 @@ static const struct { string key; i32 val; } token_str_map[] = {
 
 struct token {
 	enum token_type type;
-	u32 source_offset;
+	struct source_location location;
 	string lexeme;
 	union {
 		i64 integer;

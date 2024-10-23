@@ -104,6 +104,12 @@ void* arena_alloc(struct arena* a, isize size, isize align){
 	return p;
 }
 
+#define arena_push(ArenaPtr, Type) \
+	arena_alloc((ArenaPtr), sizeof(Type), alignof(Type))
+
+#define arena_push_array(ArenaPtr, Type, Count) \
+	arena_alloc((ArenaPtr), sizeof(Type) * (Count), alignof(Type))
+
 void arena_free(struct arena* a){
 	a->offset = 0;
 	a->last_allocation = NULL;
@@ -123,9 +129,6 @@ void* arena_resize(struct arena* a, void* p, isize size){
 
 	if((a->offset + delta) < a->cap){
 		a->offset += delta;
-		// printf("OFFSET: %ld\n", a->offset);
-		// printf("LAST_OFFSET: %ld\n", last_offset);
-		// printf("DELTA: %ld\n", delta);
 	}
 	else {
 		return NULL;
