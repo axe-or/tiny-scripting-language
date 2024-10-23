@@ -1,0 +1,7 @@
+tinylang
+tiny
+*.exe
+*.o
+*.so
+*.lib
+*.dll

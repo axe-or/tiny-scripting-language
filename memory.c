@@ -35,6 +35,10 @@ void mem_set(void* dest, byte val, isize nbytes){
 #undef _memcpy_impl
 #undef _memmove_impl
 
+#define KiB(x) ((isize)(x) * 1024ll)
+#define MiB(x) ((isize)(x) * 1024ll * 1024ll)
+#define GiB(x) ((isize)(x) * 1024ll * 1024ll * 1024ll)
+
 bool mem_valid_alignment(isize align){
 	return (align & (align - 1)) == 0 && (align != 0);
 }
