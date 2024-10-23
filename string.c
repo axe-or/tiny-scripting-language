@@ -28,7 +28,7 @@ struct utf8_iterator {
 #define str_lit(cstr_lit) ((string){.data = (byte const*)(cstr_lit), .len = sizeof(cstr_lit)})
 
 // Meant to be used with `%.*s`
-#define str_fmt(str) str.data, str.len
+#define str_fmt(str) str.len, str.data
 
 #define SURROGATE1 ((i32)0xd800)
 #define SURROGATE2 ((i32)0xdfff)

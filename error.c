@@ -29,6 +29,21 @@ enum compiler_error {
 	checker_err_incompatible_types,
 };
 
+static inline
+cstring compile_error_stage(enum compiler_error e){
+	switch(e){
+		case lexer_err_unexpected_char: return "Lexer";
+		case lexer_err_unclosed_string: return "Lexer";
+		case lexer_err_invalid_escape_sequence: return "Lexer";
+
+		case parser_err_unexpected_token: return "Parser";
+		case parser_err_prohibited_statement: return "Parser";
+
+		case checker_err_incompatible_types: return "Checker";
+		default: return "<Unknown>";
+	}
+}
+
 struct error_list_entry {
 	string message;
 	struct source_location location;
@@ -62,7 +77,7 @@ i32 error_emit(struct error_list* list, struct source_location location, i32 kin
 		list->head = err;
 
 		err->next = old;
-		err->message = str_from(msg);
+		err->message = str_from_bytes(msg, n);
 		err->error_kind = kind;
 		err->location = location;
 	}
@@ -70,20 +85,20 @@ i32 error_emit(struct error_list* list, struct source_location location, i32 kin
 	return kind;
 }
 
-#define TERM_RED "\e[0;31m"
+#define TERM_RED "\e[1;31m"
 #define TERM_RESET "\e[0m"
-
-#define ERR_HEADER TERM_RED "Error" TERM_RESET
 
 void error_print_list(struct error_list list){
 	for(struct error_list_entry* cur = list.head;
 		cur != NULL;
 		cur = cur->next)
 	{
-		printf("["ERR_HEADER" %s:%d] %s\n",
-				cur->location.file,
+		cstring err_stage = compile_error_stage(cur->error_kind);
+		printf("["TERM_RED "%s error" TERM_RESET" %.*s:%d] %.*s\n",
+				err_stage,
+				str_fmt(cur->location.file),
 				cur->location.offset,
-				cur->message);
+				str_fmt(cur->message));
 	}
 }
 
