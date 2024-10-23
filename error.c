@@ -3,18 +3,7 @@
 #include "prelude.h"
 #include "string.c"
 #include "memory.c"
-
-struct source_location {
-	string file;
-	i32 offset;
-};
-
-struct source_location src_loc(string file, i32 offset){
-	struct source_location loc;
-	loc.file = file;
-	loc.offset = offset;
-	return loc;
-}
+#include "location.c"
 
 enum compiler_error {
 	comp_err_none = 0,
