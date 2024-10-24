@@ -1,5 +1,5 @@
+#pragma once
 #include "prelude.h"
-#include "string.c"
 
 struct source_location {
 	string file;
@@ -57,3 +57,4 @@ struct source_visual_location src_to_visual_location_s(string s, struct source_l
 	}
 	return vloc;
 }
+

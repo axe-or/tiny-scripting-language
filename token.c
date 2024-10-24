@@ -1,7 +1,6 @@
 #pragma once
 #include "prelude.h"
 #include "error.c"
-#include "string.c"
 #include "memory.c"
 
 #define TOKENS \
@@ -27,6 +26,17 @@
 	X("~", tilde) \
 	X("&", bit_and) \
 	X("|", bit_or) \
+	X("<<", bit_shift_left) \
+	X(">>", bit_shift_right) \
+	/* Assignment versions */ \
+	X("+=", assign_plus) \
+	X("-=", assign_minus) \
+	X("*=", assign_star) \
+	X("/=", assign_slash) \
+	X("%=", assign_modulo) \
+	X("~=", assign_tilde) \
+	X("&=", assign_bit_and) \
+	X("|=", assign_bit_or) \
 	/* Logic & Comparison */ \
 	X("!", not) \
 	X("&&", and) \
@@ -57,7 +67,9 @@
 	X("else", else) \
 	X("for", for) \
 	X("continue", continue) \
-	X("break", break)
+	X("break", break) \
+	/* Control & Errors */ \
+	X("<EOF>", eof)
 
 enum token_type {
 	#define X(_, name) tk_##name,

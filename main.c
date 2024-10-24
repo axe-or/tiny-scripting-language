@@ -1,7 +1,7 @@
 #include "prelude.h"
+#include "lexer.c"
 #include "memory.c"
 #include "token.c"
-#include "string.c"
 #include "assert.c"
 #include "temp_arena.c"
 #include <stdio.h>

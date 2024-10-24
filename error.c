@@ -1,9 +1,9 @@
 #pragma once
 
 #include "prelude.h"
-#include "string.c"
 #include "memory.c"
 #include "location.c"
+
 
 enum compiler_error {
 	comp_err_none = 0,
