@@ -106,7 +106,7 @@ void assert_ex(bool predicate, cstring msg, cstring file, i32 line){
 
 #undef MAX_PANIC_MSG_LEN
 
-/* ---------------- Strings (UTF-8) ---------------- */
+/* ---------------- UTF-8 Support ---------------- */
 #define UTF8_RANGE1 ((i32)0x7f)
 #define UTF8_RANGE2 ((i32)0x7ff)
 #define UTF8_RANGE3 ((i32)0xffff)
@@ -283,6 +283,21 @@ bool utf8_iter_prev(struct utf8_iterator* iter, rune* r, i8* len){
 	return true;
 }
 
+#undef SURROGATE2
+#undef SURROGATE1
+#undef MASK2
+#undef MASK3
+#undef MASK4
+#undef MASKX
+#undef SIZE2
+#undef SIZE3
+#undef SIZE4
+#undef CONT
+#undef CONTINUATION1
+#undef CONTINUATION2
+#undef DECODE_ERROR
+
+/* ---------------- Strings ---------------- */
 struct string {
 	isize len;
 	byte const * data;
@@ -496,16 +511,42 @@ string str_trim(string s, string cutset){
 }
 
 #undef MAX_CUTSET_LEN
-#undef SURROGATE2
-#undef SURROGATE1
-#undef MASK2
-#undef MASK3
-#undef MASK4
-#undef MASKX
-#undef SIZE2
-#undef SIZE3
-#undef SIZE4
-#undef CONT
-#undef CONTINUATION1
-#undef CONTINUATION2
+
+
+/* ---------------- Spinlock ---------------- */
+#define SPINLOCK_LOCKED 1
+#define SPINLOCK_UNLOCKED 0
+
+struct spinlock {
+	atomic_int _state;
+};
+
+func
+void spinlock_acquire(struct spinlock* l){
+	for(;;){
+		if(!atomic_exchange_explicit(&l->_state, SPINLOCK_LOCKED, memory_order_acquire)){
+			break;
+		}
+		/* Busy wait while locked */
+		while(atomic_load_explicit(&l->_state, memory_order_relaxed));
+	}
+}
+
+func
+bool spinlock_try_acquire(struct spinlock* l){
+    return !atomic_exchange_explicit(&l->_state, SPINLOCK_LOCKED, memory_order_acquire);
+}
+
+func
+void spinlock_release(struct spinlock* l){
+	atomic_store(&l->_state, SPINLOCK_UNLOCKED);
+}
+
+#define spinlock_guard_scope(Lock, Code) do {\
+	spinlock_acquire(Lock); \
+	do { Code ; } while(0); \
+	spinlock_release(Lock); \
+} while(0)
+
+
 #undef func

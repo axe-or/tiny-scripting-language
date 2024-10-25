@@ -42,6 +42,7 @@ exit:
 
 int main(){
 	struct arena main_arena = arena_make(lexer_mem, sizeof(lexer_mem));
+
 	string src = file_read_all_text(str_lit("main.c"), &main_arena);
 	printf("%.*s", str_fmt(src));
 	return 0;
