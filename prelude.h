@@ -1,6 +1,8 @@
-/* Essential definitions. */
+/* A Prelude for C
+ * This header contains very essential definitions. */
 #pragma once
 
+/* ---------------- Definitions ---------------- */
 #include <stddef.h>
 #include <stdint.h>
 #include <stdalign.h>
@@ -67,6 +69,44 @@ static_assert(CHAR_BIT == 8, "Invalid char size");
 typedef _Bool bool;
 #endif
 
+/* ---------------- Assert & Panic ---------------- */
+extern int snprintf (char* s, size_t len, char const* fmt, ...);
+extern int puts(char const* s);
+extern noreturn void abort();
+
+#define MAX_PANIC_MSG_LEN 2048
+
+func
+noreturn void panic_ex(cstring msg, cstring file, i32 line){
+	char buf[MAX_PANIC_MSG_LEN];
+	int n = snprintf(buf, MAX_PANIC_MSG_LEN - 1, "%s:%d Panic: %s", file, line, msg);
+	buf[n] = 0;
+	puts(buf);
+	abort();
+}
+
+func
+void assert_ex(bool predicate, cstring msg, cstring file, i32 line){
+	if(!predicate){
+		char buf[MAX_PANIC_MSG_LEN];
+		int n = snprintf(buf, MAX_PANIC_MSG_LEN - 1, "%s:%d Assertion failed: %s\n", file, line, msg);
+		buf[n] = 0;
+		puts(buf);
+		abort();
+	}
+}
+
+#ifdef assert
+#undef assert
+#endif
+
+#define assert(Pred, Msg) assert_ex((Pred), (Msg), __FILE__, __LINE__)
+
+#define panic(Msg) panic_ex((Msg), __FILE__, __LINE__)
+
+#undef MAX_PANIC_MSG_LEN
+
+/* ---------------- Strings (UTF-8) ---------------- */
 #define UTF8_RANGE1 ((i32)0x7f)
 #define UTF8_RANGE2 ((i32)0x7ff)
 #define UTF8_RANGE3 ((i32)0xffff)
@@ -211,8 +251,6 @@ struct utf8_decode_result utf8_decode(byte const* buf, isize len){
 	return res;
 }
 
-// Steps iterator forward and puts rune and Length advanced into pointers,
-// returns false when finished.
 func
 bool utf8_iter_next(struct utf8_iterator* iter, rune* r, i8* len){
 	if(iter->current >= iter->data_length){ return 0; }
@@ -230,8 +268,6 @@ bool utf8_iter_next(struct utf8_iterator* iter, rune* r, i8* len){
 	return 1;
 }
 
-// Steps iterator backward and puts rune and its length into pointers,
-// returns false when finished.
 func
 bool utf8_iter_prev(struct utf8_iterator* iter, rune* r, i8* len){
 	if(iter->current <= 0){ return false; }
@@ -400,7 +436,7 @@ string str_trim_leading(string s, string cutset){
 				cut_after += n;
 			}
 			else {
-				break; // Reached first rune that isn't in cutset
+				break; /* Reached first rune that isn't in cutset */
 			}
 
 		}
@@ -444,7 +480,7 @@ string str_trim_trailing(string s, string cutset){
 				cut_until -= n;
 			}
 			else {
-				break; // Reached first rune that isn't in cutset
+				break; /* Reached first rune that isn't in cutset */
 			}
 
 		}
@@ -472,5 +508,4 @@ string str_trim(string s, string cutset){
 #undef CONT
 #undef CONTINUATION1
 #undef CONTINUATION2
-
 #undef func
