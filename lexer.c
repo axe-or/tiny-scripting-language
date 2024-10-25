@@ -38,7 +38,94 @@ bool lex_advance_matching(struct lexer* lex, byte match){
 	return false;
 }
 
-struct token lex_comment(struct lexer* lex){}
+static inline
+bool is_alpha(byte c){
+	return ((c >= 'A') && (c <= 'Z'))
+		|| ((c >= 'a') && (c <= 'z'));
+}
+
+static inline
+bool is_decimal_digit(byte c){
+	return (c >= '0') && (c <= '9');
+}
+
+static inline
+bool is_hex_digit(byte c){
+	return ((c >= '0') && (c <= '9'))
+		|| ((c >= 'a') && (c <= 'f'))
+		|| ((c >= 'A') && (c <= 'F'));
+}
+
+static inline
+bool is_oct_digit(byte c){
+	return ((c >= '0') && (c <= '9'))
+		|| ((c >= 'a') && (c <= 'f'))
+		|| ((c >= 'A') && (c <= 'F'));
+}
+
+string lex_current_lexeme(struct lexer* lex){
+	return str_sub(lex->source, lex->previous, lex->current - lex->previous);
+}
+
+static const struct { string key; i32 val; } token_keyword_map[] = {
+#define X(str, name) {.key = str_lit(str), .val = tk_##name },
+	TOKEN_KEYWORDS()
+	#undef X
+};
+
+struct token lex_comment(struct lexer* lex){
+	lex->previous = lex->current;
+	while(true){
+		byte c = lex_advance(lex);
+		if(c == '\n' || c == 0){
+			break;
+		}
+	}
+
+	return (struct token){
+		.lexeme = lex_current_lexeme(lex),
+		.type = tk_comment,
+		.offset = lex->current,
+	};
+}
+
+struct token lex_identifier(struct lexer* lex){
+	lex->previous = lex->current;
+	while(true){
+		byte c = lex_advance(lex);
+		if(!is_alpha(c) && !is_decimal_digit(c) && c != '_'){
+			lex->current -= 1;
+			break;
+		}
+	}
+
+	struct token tk = {
+		.lexeme = lex_current_lexeme(lex),
+		.offset = lex->current,
+		.type = tk_identifier,
+	};
+
+	for(isize i = 0; i < (sizeof(token_keyword_map) / sizeof(token_keyword_map[0])); i += 1){
+		i32 type = token_str_map[i].val;
+		if(str_eq(tk.lexeme, token_str_map[i].key)){
+			tk.type = type;
+		}
+	}
+
+	return tk;
+}
+
+struct token lex_number(struct lexer* lex){
+	panic("Unimplemented");
+}
+
+struct token lex_rune(struct lexer* lex){
+	panic("Unimplemented");
+}
+
+struct token lex_string(struct lexer* lex){
+	panic("Unimplemented");
+}
 
 #define TK(Name) ((struct token){.type = tk_##Name, .offset = lex->current})
 
@@ -93,6 +180,27 @@ struct token lex_next(struct lexer* lex){
 		case '!': TOKEN_2('=', TK(neq), TK(not));
 		case '>': TOKEN_3('=', TK(gteq), '>', TK(bit_shift_right), TK(gt));
 		case '<': TOKEN_3('=', TK(lteq), '<', TK(bit_shift_left), TK(lt));
+
+		default: {
+			if(is_decimal_digit(c)){
+				lex->current -= 1;
+				return lex_number(lex);
+			}
+			else if(is_alpha(c) || c == '_'){
+				lex->current -= 1;
+				return lex_identifier(lex);
+			}
+			else if(c == '"'){
+				return lex_string(lex);
+			}
+			else if(c == '\''){
+				return lex_rune(lex);
+			}
+			else {
+				token.type = tk_unknown;
+				return token;
+			}
+		}
 	}
 
 	return token;

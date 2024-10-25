@@ -695,5 +695,5 @@ void* arena_resize(struct arena* a, void* p, isize size){
 	return p;
 }
 
-
 #undef func
+

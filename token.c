@@ -1,8 +1,13 @@
 #pragma once
 #include "prelude.h"
 
-#define TOKENS \
+#define TOKEN_SPECIALS() \
+	/* Control and error */ \
 	X("<Unknown>", unknown) \
+	X("<Comment>", comment) \
+	X("<EOF>", eof)
+
+#define TOKEN_OPERATORS() \
 	/* Delimiters */ \
 	X("(", paren_open) \
 	X(")", paren_close) \
@@ -47,16 +52,18 @@
 	X("<=", lteq) \
 	/* Other operators */ \
 	X(".", dot) \
-	X("=", assign) \
-	/* Special & Literals */ \
+	X("=", assign)
+
+#define TOKEN_LITERALS() \
 	X("<identifier>", identifier) \
 	X("<string>", string) \
 	X("<integer>", integer) \
-	X("<real>", real) \
+	X("<real>", real)
+
+#define TOKEN_KEYWORDS() \
 	X("true", true) \
 	X("false", false) \
 	X("nil", nil) \
-	/* Keywords */ \
 	X("var", var) \
 	X("struct", struct) \
 	X("fun", fun) \
@@ -66,19 +73,23 @@
 	X("for", for) \
 	X("continue", continue) \
 	X("break", break) \
-	/* Control & Errors */ \
-	X("<EOF>", eof)
+
+#define TOKENS() \
+	TOKEN_SPECIALS() \
+	TOKEN_OPERATORS() \
+	TOKEN_LITERALS() \
+	TOKEN_KEYWORDS()
 
 enum token_type {
 	#define X(_, name) tk_##name,
-	TOKENS
+	TOKENS()
 	#undef X
 	tk__count,
 };
 
 static const struct { string key; i32 val; } token_str_map[] = {
 #define X(str, name) {.key = str_lit(str), .val = tk_##name },
-	TOKENS
+	TOKENS()
 	#undef X
 };
 
