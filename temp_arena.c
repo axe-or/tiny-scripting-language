@@ -1,6 +1,6 @@
 #pragma once
 
-#include "memory.c"
+#include "prelude.h"
 
 #define TEMP_ARENA_BUF_SIZE MiB(64)
 

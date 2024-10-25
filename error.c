@@ -1,7 +1,6 @@
 #pragma once
 
 #include "prelude.h"
-#include "memory.c"
 #include "location.c"
 
 enum compiler_error {

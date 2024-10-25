@@ -1,6 +1,5 @@
 #pragma once
 #include "prelude.h"
-#include "memory.c"
 
 #define TOKENS \
 	X("<Unknown>", unknown) \
