@@ -11,10 +11,6 @@ struct lexer {
 	string file;
 };
 
-struct source_location lex_current_loc(struct lexer* lex){
-	return src_location(lex->file, lex->current);
-}
-
 byte lex_advance(struct lexer* lex){
 	if(lex->current >= lex->source.len){
 		return 0;
@@ -43,17 +39,25 @@ bool lex_advance_matching(struct lexer* lex, byte match){
 	return false;
 }
 
-#define ARITH_OR_ASSIGN(name) { \
-	if(lex_advance_matching(lex, '=')) \
-		token.type = tk_assign_##name; \
-	else \
-		token.type = tk_##name; \
-	return token; }
+struct token lex_comment(struct lexer* lex){}
 
-#define BASIC_TOKEN(name) { \
-	token.type = tk_##name; \
-	return token; \
-}
+#define TK(Name) ((struct token){.type = tk_##Name, .offset = lex->current})
+
+#define TOKEN_1(Res) { return Res; }
+
+#define TOKEN_2(Match1, Res1, Alt){ \
+	if(lex_advance_matching(lex, Match1)) \
+		return Res1; \
+	else \
+		return Alt; }
+
+#define TOKEN_3(Match1, Res1, Match2, Res2, Alt){ \
+	if(lex_advance_matching(lex, Match1)) \
+		return Res1; \
+	else if(lex_advance_matching(lex, Match2)) \
+	  return Res2; \
+	else \
+	  return Alt; }
 
 struct token lex_next(struct lexer* lex){
 	struct token token = {0};
@@ -65,34 +69,37 @@ struct token lex_next(struct lexer* lex){
 	}
 
 	switch(c){
-		case '(': BASIC_TOKEN(paren_open);
-		case ')': BASIC_TOKEN(paren_close);
-		case '[': BASIC_TOKEN(square_open);
-		case ']': BASIC_TOKEN(square_close);
-		case '{': BASIC_TOKEN(curly_open);
-		case '}': BASIC_TOKEN(curly_close);
+		case '(': TOKEN_1(TK(paren_open));
+		case ')': TOKEN_1(TK(paren_close));
+		case '[': TOKEN_1(TK(square_open));
+		case ']': TOKEN_1(TK(square_close));
+		case '{': TOKEN_1(TK(curly_open));
+		case '}': TOKEN_1(TK(curly_close));
 
-		case '.': BASIC_TOKEN(dot);
-		case ',': BASIC_TOKEN(comma);
-		case ':': BASIC_TOKEN(colon);
-		case ';': BASIC_TOKEN(semicolon);
+		case '.': TOKEN_1(TK(dot));
+		case ',': TOKEN_1(TK(comma));
+		case ':': TOKEN_1(TK(colon));
+		case ';': TOKEN_1(TK(semicolon));
 
-		case '+': ARITH_OR_ASSIGN(plus);
-		case '-': ARITH_OR_ASSIGN(minus);
-		case '*': ARITH_OR_ASSIGN(star);
-		case '%': ARITH_OR_ASSIGN(modulo);
-		case '&': ARITH_OR_ASSIGN(bit_and);
-		case '|': ARITH_OR_ASSIGN(bit_or);
-		case '~': ARITH_OR_ASSIGN(tilde);
+		case '+': TOKEN_2('=', TK(assign_plus), TK(plus));
+		case '-': TOKEN_2('=', TK(assign_minus), TK(minus));
+		case '*': TOKEN_2('=', TK(assign_star), TK(star));
+		case '%': TOKEN_2('=', TK(assign_modulo), TK(modulo));
+		case '&': TOKEN_2('=', TK(assign_bit_and), TK(bit_and));
+		case '|': TOKEN_2('=', TK(assign_bit_or), TK(bit_or));
+		case '~': TOKEN_2('=', TK(assign_tilde), TK(tilde));
+		case '/': TOKEN_3('/', lex_comment(lex), '=', TK(assign_slash), TK(slash));
 
-		case '>':
-		case '<':
-
-		case '/': /* TODO */;
+		case '=': TOKEN_2('=', TK(eq), TK(assign));
+		case '!': TOKEN_2('=', TK(neq), TK(not));
+		case '>': TOKEN_3('=', TK(gteq), '>', TK(bit_shift_right), TK(gt));
+		case '<': TOKEN_3('=', TK(lteq), '<', TK(bit_shift_left), TK(lt));
 	}
 
 	return token;
 }
 
-#undef BASIC_TOKEN
-#undef ARITH_OR_ASSIGN
+#undef TOKEN_3
+#undef TOKEN_2
+#undef TOKEN_1
+#undef TK

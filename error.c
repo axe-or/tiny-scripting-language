@@ -4,7 +4,6 @@
 #include "memory.c"
 #include "location.c"
 
-
 enum compiler_error {
 	comp_err_none = 0,
 
@@ -53,7 +52,7 @@ i32 error_emit(struct error_list* list, struct source_location location, i32 kin
 	/* Format message */ {
 		va_list args;
 		va_start(args, fmt);
-		n = vsnprintf(buf, MAX_ERROR_MSG_LEN - 1, fmt, args);
+		n = vsnprintf((char*)buf, MAX_ERROR_MSG_LEN - 1, fmt, args);
 		va_end(args);
 	}
 
@@ -74,8 +73,8 @@ i32 error_emit(struct error_list* list, struct source_location location, i32 kin
 	return kind;
 }
 
-#define TERM_RED "\e[1;31m"
-#define TERM_RESET "\e[0m"
+#define TERM_RED "\x27[1;31m"
+#define TERM_RESET "\x27[0m"
 
 void error_print_list(struct error_list list){
 	for(struct error_list_entry* cur = list.head;

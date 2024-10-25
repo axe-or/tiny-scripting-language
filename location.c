@@ -3,58 +3,24 @@
 
 struct source_location {
 	string file;
-	i32 offset;
-};
-
-struct source_visual_location {
-	string file;
 	i32 line;
 	i32 column;
 };
 
-struct source_location src_location(string file, i32 offset){
-	struct source_location loc;
-	loc.file = file;
-	loc.offset = offset;
+struct source_location src_loc_from_string_offset(string src, i64 offset){
+	struct source_location loc = {
+		.line = 1,
+		.column = 0,
+	};
+
+	for(i64 i = 0; i < src.len; i += 1){
+		if(src.data[i] == '\n'){
+			loc.column = 0;
+			loc.line += 1;
+		} else {
+			loc.column += 1;
+		}
+	}
+
 	return loc;
-};
-
-/*
-struct source_visual_location src_to_visual_location_f(FILE* f, struct source_location loc){
-	struct source_visual_location vloc = {
-		.file = loc.file,
-		.line = 1,
-		.column = 0,
-	};
-
-	for(char c = fgetc(f); c != EOF; c = fgetc(f)){
-		if(c == '\n'){
-			vloc.line += 1;
-			vloc.column = 0;
-		} else {
-			vloc.column += 1;
-		}
-	}
-	return vloc;
 }
-*/
-
-struct source_visual_location src_to_visual_location_s(string s, struct source_location loc){
-	struct source_visual_location vloc = {
-		.file = loc.file,
-		.line = 1,
-		.column = 0,
-	};
-
-	for(isize i = 0; i < s.len; i += 1){
-		byte c = s.data[i];
-		if(c == '\n'){
-			vloc.line += 1;
-			vloc.column = 0;
-		} else {
-			vloc.column += 1;
-		}
-	}
-	return vloc;
-}
-

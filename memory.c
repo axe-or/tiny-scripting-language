@@ -16,12 +16,12 @@ extern void* memcpy(void *dst, void const * src, size_t n);
 #define _memmove_impl memmove
 #endif
 
-void mem_copy(void* dest, void* source, isize nbytes){
+void mem_copy(void* dest, void const* source, isize nbytes){
 	assert(nbytes >= 0, "Cannot copy < 0 bytes");
 	_memmove_impl(dest, source, nbytes);
 }
 
-void mem_copy_no_overlap(void* dest, void* source, isize nbytes){
+void mem_copy_no_overlap(void* dest, void const* source, isize nbytes){
 	assert(nbytes >= 0, "Cannot copy < 0 bytes");
 	_memcpy_impl(dest, source, nbytes);
 }

@@ -10,6 +10,8 @@
 #include <stdarg.h>
 #include <limits.h>
 
+#define func static inline
+
 typedef int8_t  i8;
 typedef int16_t i16;
 typedef int32_t i32;
@@ -36,7 +38,7 @@ typedef char const * cstring;
 typedef i32 rune;
 typedef struct string string;
 
-static inline
+func
 void swap_bytes_raw(byte* data, isize len){
 	for(isize i = 0; i < (len / 2); i += 1){
 		byte temp = data[i];
@@ -93,10 +95,10 @@ struct utf8_iterator {
 	isize current;
 };
 
-#define str_lit(cstrLit) ((string){.data = (byte const*)(cstrLit), .len = sizeof(cstrLit)})
+#define str_lit(cstrLit) ((string const){.data = (byte const*)(cstrLit), .len = sizeof(cstrLit)})
 
 // Meant to be used with `%.*s`
-#define str_fmt(str) str.len, str.data
+#define str_fmt(str) ((int)str.len), str.data
 
 #define SURROGATE1 ((i32)0xd800)
 #define SURROGATE2 ((i32)0xdfff)
@@ -116,12 +118,12 @@ struct utf8_iterator {
 #define CONTINUATION1 (0x80)
 #define CONTINUATION2 (0xbf)
 
-static inline
+func
 bool is_continuation_byte(rune c){
 	return (c >= CONTINUATION1) && (c <= CONTINUATION2);
 }
 
-static
+func
 struct utf8_encode_result utf8_encode(rune c){
 	struct utf8_encode_result res = {0};
 
@@ -159,7 +161,7 @@ struct utf8_encode_result utf8_encode(rune c){
 
 #define DECODE_ERROR ((struct utf8_decode_result){ .codepoint = UTF8_ERROR, .len = 0 })
 
-static
+func
 struct utf8_decode_result utf8_decode(byte const* buf, isize len){
 	struct utf8_decode_result res = {0};
 	if(buf == NULL || len <= 0){ return DECODE_ERROR; }
@@ -211,7 +213,7 @@ struct utf8_decode_result utf8_decode(byte const* buf, isize len){
 
 // Steps iterator forward and puts rune and Length advanced into pointers,
 // returns false when finished.
-static
+func
 bool utf8_iter_next(struct utf8_iterator* iter, rune* r, i8* len){
 	if(iter->current >= iter->data_length){ return 0; }
 
@@ -230,7 +232,7 @@ bool utf8_iter_next(struct utf8_iterator* iter, rune* r, i8* len){
 
 // Steps iterator backward and puts rune and its length into pointers,
 // returns false when finished.
-static
+func
 bool utf8_iter_prev(struct utf8_iterator* iter, rune* r, i8* len){
 	if(iter->current <= 0){ return false; }
 
@@ -250,7 +252,7 @@ struct string {
 	byte const * data;
 };
 
-static inline
+func
 isize cstring_len(cstring cstr){
 	static const isize CSTR_MAX_LENGTH = (~(u32)0) >> 1;
 	isize size = 0;
@@ -260,7 +262,7 @@ isize cstring_len(cstring cstr){
 	return size;
 }
 
-static
+func
 struct utf8_iterator str_iterator(string s){
 	return (struct utf8_iterator){
 		.current = 0,
@@ -269,7 +271,7 @@ struct utf8_iterator str_iterator(string s){
 	};
 }
 
-static
+func
 struct utf8_iterator str_iterator_reversed(string s){
 	return (struct utf8_iterator){
 		.current = s.len,
@@ -278,12 +280,12 @@ struct utf8_iterator str_iterator_reversed(string s){
 	};
 }
 
-static
+func
 bool str_empty(string s){
 	return s.len == 0 || s.data == NULL;
 }
 
-static
+func
 string str_from(cstring data){
 	string s = {
 		.data = (byte const *)data,
@@ -292,7 +294,7 @@ string str_from(cstring data){
 	return s;
 }
 
-static
+func
 string str_from_bytes(byte const* data, isize length){
 	string s = {
 		.data = (byte const *)data,
@@ -301,7 +303,7 @@ string str_from_bytes(byte const* data, isize length){
 	return s;
 }
 
-static
+func
 string str_from_range(cstring data, isize start, isize length){
 	string s = {
 		.data = (byte const *)&data[start],
@@ -310,7 +312,7 @@ string str_from_range(cstring data, isize start, isize length){
 	return s;
 }
 
-static
+func
 isize str_codepoint_count(string s){
 	struct utf8_iterator it = str_iterator(s);
 
@@ -322,7 +324,7 @@ isize str_codepoint_count(string s){
 	return count;
 }
 
-static
+func
 isize str_codepoint_offset(string s, isize n){
 	struct utf8_iterator it = str_iterator(s);
 
@@ -337,7 +339,7 @@ isize str_codepoint_offset(string s, isize n){
 	return it.current;
 }
 
-static
+func
 string str_sub(string s, isize start, isize byte_count){
 	static const string EMPTY = {0};
 	if(start < 0 || byte_count < 0 || (start + byte_count) > s.len){ return EMPTY; }
@@ -350,7 +352,7 @@ string str_sub(string s, isize start, isize byte_count){
 	return sub;
 }
 
-static
+func
 bool str_eq(string a, string b){
 	if(a.len != b.len){ return false; }
 
@@ -363,10 +365,8 @@ bool str_eq(string a, string b){
 
 #define MAX_CUTSET_LEN 64
 
-static
+func
 string str_trim_leading(string s, string cutset){
-	/* debug_assert(cutset.len <= MAX_CUTSET_LEN, "Cutset string exceeds MAX_CUTSET_LEN"); */
-
 	rune set[MAX_CUTSET_LEN] = {0};
 	isize set_len = 0;
 	isize cut_after = 0;
@@ -409,7 +409,7 @@ string str_trim_leading(string s, string cutset){
 	return str_sub(s, cut_after, s.len - cut_after);
 }
 
-static
+func
 string str_trim_trailing(string s, string cutset){
 	rune set[MAX_CUTSET_LEN] = {0};
 	isize set_len = 0;
@@ -453,12 +453,13 @@ string str_trim_trailing(string s, string cutset){
 	return str_sub(s, 0, cut_until);
 }
 
-static
+func
 string str_trim(string s, string cutset){
 	string st = str_trim_leading(str_trim_trailing(s, cutset), cutset);
 	return st;
 }
 
+#undef MAX_CUTSET_LEN
 #undef SURROGATE2
 #undef SURROGATE1
 #undef MASK2
@@ -471,3 +472,5 @@ string str_trim(string s, string cutset){
 #undef CONT
 #undef CONTINUATION1
 #undef CONTINUATION2
+
+#undef func
