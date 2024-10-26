@@ -2,10 +2,12 @@
 
 #include "prelude.h"
 #include "location.c"
+#include <stdio.h>
 
 enum compiler_error {
 	comp_err_none = 0,
 
+	lexer_err_invalid_numeric_base,
 	lexer_err_unexpected_char,
 	lexer_err_unclosed_string,
 	lexer_err_invalid_escape_sequence,
@@ -81,10 +83,11 @@ void error_print_list(struct error_list list){
 		cur = cur->next)
 	{
 		cstring err_stage = compile_error_stage(cur->error_kind);
-		printf("["TERM_RED "%s error" TERM_RESET" %.*s:%d] %.*s\n",
+		printf("["TERM_RED "%s error" TERM_RESET" %.*s(%d:%d)] %.*s\n",
 				err_stage,
 				str_fmt(cur->location.file),
-				cur->location.offset,
+				cur->location.line,
+				cur->location.column,
 				str_fmt(cur->message));
 	}
 }

@@ -1,5 +1,6 @@
 #include "prelude.h"
 #include <stdio.h>
+#include "lexer.c"
 
 static byte lexer_mem[MiB(16)];
 
@@ -40,5 +41,6 @@ int main(){
 
 	string src = file_read_all_text(str_lit("main.c"), &main_arena);
 	printf("%.*s", str_fmt(src));
+
 	return 0;
 }

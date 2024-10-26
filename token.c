@@ -101,6 +101,7 @@ struct token {
 		i64 integer;
 		f64 real;
 		string str;
+		i32 error; /* For unknown/bad tokens */
 	} value;
 };
 

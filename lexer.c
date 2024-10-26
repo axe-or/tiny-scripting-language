@@ -1,13 +1,17 @@
 #pragma once
 #include "prelude.h"
-#include "location.c"
 #include "token.c"
+#include "error.c"
+
+extern long long strtoll(char * const restrict str, char ** restrict str_end, int base);
 
 struct lexer {
 	i32 current;
 	i32 previous;
 	string source;
 	string file;
+
+	struct error_list* errors;
 };
 
 byte lex_advance(struct lexer* lex){
@@ -57,6 +61,11 @@ bool is_hex_digit(byte c){
 }
 
 static inline
+bool is_bin_digit(byte c){
+	return ((c >= '0') && (c <= '1'));
+}
+
+static inline
 bool is_oct_digit(byte c){
 	return ((c >= '0') && (c <= '9'))
 		|| ((c >= 'a') && (c <= 'f'))
@@ -65,6 +74,25 @@ bool is_oct_digit(byte c){
 
 string lex_current_lexeme(struct lexer* lex){
 	return str_sub(lex->source, lex->previous, lex->current - lex->previous);
+}
+
+struct source_location lex_current_location(struct lexer* lex){
+	i32 line = 1;
+	i32 column = 0;
+	for(isize i = 0; i < lex->current; i += 1){
+		if(lex->source.data[i] == '\n'){
+			line += 1;
+			column = 0;
+		}
+		else {
+			column += 1;
+		}
+	}
+	return (struct source_location){
+		.line = line,
+		.column = column,
+		.file = lex->file,
+	};
 }
 
 static const struct { string key; i32 val; } token_keyword_map[] = {
@@ -115,8 +143,59 @@ struct token lex_identifier(struct lexer* lex){
 	return tk;
 }
 
+#define LEXER_MAX_NUMBER_DIGIT_LENGTH 512
+
+struct token lex_integer(struct lexer* lex, bool (*digit_func)(byte), u8 base){
+	byte digits[LEXER_MAX_NUMBER_DIGIT_LENGTH];
+	i32 cur_digit = 0;
+
+	while(cur_digit < LEXER_MAX_NUMBER_DIGIT_LENGTH){
+		byte c = lex_advance(lex);
+		if(digit_func(c)){
+			digits[cur_digit] = c;
+			cur_digit += 1;
+		}
+		else if(c == '_'){
+			continue;
+		}
+		else {
+			lex->current -= 1;
+			break;
+		}
+	}
+
+	digits[cur_digit] = 0;
+	i64 number = strtoll((char *)digits, NULL, base);
+	return (struct token){
+		.offset = lex->current,
+		.type = tk_integer,
+		.value.integer = number,
+	};
+}
+
 struct token lex_number(struct lexer* lex){
-	panic("Unimplemented");
+	lex->previous = lex->current;
+
+	struct token tok = {
+		.offset = lex->current,
+	};
+
+	byte first = lex_peek(lex, 0);
+	byte second = lex_peek(lex, 1);
+
+	if(first == '0' && is_alpha(second)){
+		lex->current += 2;
+		switch(second){
+			case 'b': return lex_integer(lex, is_bin_digit, 2);
+			case 'o': return lex_integer(lex, is_oct_digit, 8);
+			case 'x': return lex_integer(lex, is_hex_digit, 16);
+			default:
+				tok.type = tk_unknown;
+				tok.value.error = error_emit(lex->errors, lex_current_location(lex), lexer_err_invalid_numeric_base, "Invalid base: '%c'", second);
+				return tok;
+		}
+	}
+	
 }
 
 struct token lex_rune(struct lexer* lex){
